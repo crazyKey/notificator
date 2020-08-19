@@ -74,7 +74,7 @@ func (o osxNotificator) pushCritical(title string, text string, iconPath string)
 	// same function as above...
 	if CheckTermNotif() {
 		// timeout set to 30 seconds, to show the importance of the notification
-		return exec.Command("terminal-notifier", "-title", o.AppName, "-message", text, "-subtitle", title, "-timeout", "30")
+		return exec.Command("terminal-notifier", "-title", o.AppName, "-message", text, "-subtitle", title, "-appIcon", iconPath, "-timeout", "30")
 	} else if CheckMacOSVersion() {
 		notification := fmt.Sprintf("display notification \"%s\" with title \"%s\" subtitle \"%s\"", text, o.AppName, title)
 		return exec.Command("osascript", "-e", notification)
