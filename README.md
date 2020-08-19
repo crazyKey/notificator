@@ -7,6 +7,8 @@ Desktop notification with Golang for:
   * Mac OS X with `terminal-notifier` (if installed) or `osascript` (native, 10.9 Mavericks or Up.);
   * Linux with `notify-send` for Gnome and `kdialog` for Kde.
 
+The open URL option works only with `terminal-notifier` on Mac OS X.
+
 Usage
 ------
 
@@ -26,7 +28,7 @@ func main() {
     AppName:     "My test App",
   })
 
-  notify.Push("title", "text", "/home/user/icon.png", notificator.UR_CRITICAL)
+  notify.Push("title", "text", "/home/user/icon.png", "https://github.com/crazyKey/notificator", notificator.UR_CRITICAL)
 }
 ```
 

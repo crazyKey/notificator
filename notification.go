@@ -19,8 +19,8 @@ const (
 )
 
 type notifier interface {
-	push(title string, text string, iconPath string) *exec.Cmd
-	pushCritical(title string, text string, iconPath string) *exec.Cmd
+	push(title string, text string, iconPath string, URL string) *exec.Cmd
+	pushCritical(title string, text string, iconPath string, URL string) *exec.Cmd
 }
 
 type Notificator struct {
@@ -28,7 +28,7 @@ type Notificator struct {
 	defaultIcon string
 }
 
-func (n Notificator) Push(title string, text string, iconPath string, urgency string) error {
+func (n Notificator) Push(title string, text string, iconPath string, URL string, urgency string) error {
 	icon := n.defaultIcon
 
 	if iconPath != "" {
@@ -36,10 +36,10 @@ func (n Notificator) Push(title string, text string, iconPath string, urgency st
 	}
 
 	if urgency == UR_CRITICAL {
-		return n.notifier.pushCritical(title, text, icon).Run()
+		return n.notifier.pushCritical(title, text, icon, URL).Run()
 	}
 
-	return n.notifier.push(title, text, icon).Run()
+	return n.notifier.push(title, text, icon, URL).Run()
 
 }
 
@@ -47,14 +47,14 @@ type osxNotificator struct {
 	AppName string
 }
 
-func (o osxNotificator) push(title string, text string, iconPath string) *exec.Cmd {
+func (o osxNotificator) push(title string, text string, iconPath string, URL string) *exec.Cmd {
 
 	// Checks if terminal-notifier exists, and is accessible.
 
 	// if terminal-notifier exists, use it.
 	// else, fall back to osascript. (Mavericks and later.)
 	if CheckTermNotif() {
-		return exec.Command("terminal-notifier", "-title", o.AppName, "-message", text, "-subtitle", title, "-appIcon", iconPath)
+		return exec.Command("terminal-notifier", "-title", o.AppName, "-message", text, "-subtitle", title, "-appIcon", iconPath, "-open", URL)
 	} else if CheckMacOSVersion() {
 		title = strings.Replace(title, `"`, `\"`, -1)
 		text = strings.Replace(text, `"`, `\"`, -1)
@@ -69,12 +69,12 @@ func (o osxNotificator) push(title string, text string, iconPath string) *exec.C
 }
 
 // Causes the notification to stick around until clicked.
-func (o osxNotificator) pushCritical(title string, text string, iconPath string) *exec.Cmd {
+func (o osxNotificator) pushCritical(title string, text string, iconPath string, URL string) *exec.Cmd {
 
 	// same function as above...
 	if CheckTermNotif() {
 		// timeout set to 30 seconds, to show the importance of the notification
-		return exec.Command("terminal-notifier", "-title", o.AppName, "-message", text, "-subtitle", title, "-appIcon", iconPath, "-timeout", "30")
+		return exec.Command("terminal-notifier", "-title", o.AppName, "-message", text, "-subtitle", title, "-appIcon", iconPath, "-open", URL, "-timeout", "30")
 	} else if CheckMacOSVersion() {
 		notification := fmt.Sprintf("display notification \"%s\" with title \"%s\" subtitle \"%s\"", text, o.AppName, title)
 		return exec.Command("osascript", "-e", notification)
@@ -86,23 +86,23 @@ func (o osxNotificator) pushCritical(title string, text string, iconPath string)
 
 type linuxNotificator struct{}
 
-func (l linuxNotificator) push(title string, text string, iconPath string) *exec.Cmd {
+func (l linuxNotificator) push(title string, text string, iconPath string, URL string) *exec.Cmd {
 	return exec.Command("notify-send", "-i", iconPath, title, text)
 }
 
 // Causes the notification to stick around until clicked.
-func (l linuxNotificator) pushCritical(title string, text string, iconPath string) *exec.Cmd {
+func (l linuxNotificator) pushCritical(title string, text string, iconPath string, URL string) *exec.Cmd {
 	return exec.Command("notify-send", "-i", iconPath, title, text, "-u", "critical")
 }
 
 type windowsNotificator struct{}
 
-func (w windowsNotificator) push(title string, text string, iconPath string) *exec.Cmd {
+func (w windowsNotificator) push(title string, text string, iconPath string, URL string) *exec.Cmd {
 	return exec.Command("growlnotify", "/i:", iconPath, "/t:", title, text)
 }
 
 // Causes the notification to stick around until clicked.
-func (w windowsNotificator) pushCritical(title string, text string, iconPath string) *exec.Cmd {
+func (w windowsNotificator) pushCritical(title string, text string, iconPath string, URL string) *exec.Cmd {
 	return exec.Command("growlnotify", "/i:", iconPath, "/t:", title, text, "/s", "true", "/p", "2")
 }
 
